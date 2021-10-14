@@ -26,22 +26,24 @@ spring.security:
 # Externalized Keycloak configuration
 keycloak:
   # SSO Authentication requests. Send by application as redirect to the browser
-  url.auth: ${KEYCLOAK_URL_AUTH:http://localhost:9000}
+  url.auth: ${KEYCLOAK_URL_AUTH:http://localhost:8888}
   # SSO Token requests. Send from the application to Keycloak
-  url.token: ${KEYCLOAK_URL_TOKEN:http://localhost:9000}
+  url.token: ${KEYCLOAK_URL_TOKEN:http://localhost:8888}
   # Keycloak access for the Identity Provider plugin.
-  url.plugin: ${KEYCLOAK_URL_PLUGIN:https://localhost:9001}
+  url.plugin: ${KEYCLOAK_URL_PLUGIN:http://localhost:8888}
+  realm: ${KEYCLOAK_REALM:harmoneycorp}
+  client.id: ${KEYCLOAK_CLIENT_ID:camunda-identity-service}
+  client.secret: 07c362dd-7e4f-46d2-9aa6-54e9f0772b8f
 
   # Keycloak Camunda Identity Client
   client.id: ${KEYCLOAK_CLIENT_ID:camunda-identity-service}
   client.secret: ${KEYCLOAK_CLIENT_SECRET:cbee1434-7e4d-4d85-bab6-5944b427a3c0}
 
 plugin.identity.keycloak:
-  keycloakIssuerUrl: ${keycloak.url.plugin}/auth/realms/camunda
-  keycloakAdminUrl: ${keycloak.url.plugin}/auth/admin/realms/camunda
+  keycloakIssuerUrl: ${keycloak.url.plugin}/auth/realms/${keycloak.realm}
+  keycloakAdminUrl: ${keycloak.url.plugin}/auth/admin/realms/${keycloak.realm}
   clientId: ${keycloak.client.id}
   clientSecret: ${keycloak.client.secret}
-  useEmailAsCamundaUserId: false
   useUsernameAsCamundaUserId: true
   useGroupPathAsCamundaGroupId: true
   administratorGroupName: camunda-admin
