@@ -1,4 +1,0 @@
-custom:
-  process-key: postgresql-demo-process
-  process-instance-amount: 10
-  database-name: camunda

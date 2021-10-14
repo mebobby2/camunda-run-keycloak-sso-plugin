@@ -1,1 +1,0 @@
-# MOVED TO https://github.com/camunda-consulting/camunda-util-demo-data-generator
