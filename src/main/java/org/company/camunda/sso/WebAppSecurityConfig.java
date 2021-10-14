@@ -1,10 +1,10 @@
 package org.company.camunda.sso;
 
 import java.util.Collections;
-
 import javax.inject.Inject;
-
 import org.camunda.bpm.webapp.impl.security.auth.ContainerBasedAuthenticationFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -21,63 +21,77 @@ import org.springframework.web.filter.ForwardedHeaderFilter;
 /**
  * Camunda Web application SSO configuration for usage with KeycloakIdentityProviderPlugin.
  */
-@ConditionalOnMissingClass("org.springframework.test.context.junit.jupiter.SpringExtension")
+@ConditionalOnMissingClass(
+  "org.springframework.test.context.junit.jupiter.SpringExtension"
+)
 @Configuration
 @Order(SecurityProperties.BASIC_AUTH_ORDER - 10)
 public class WebAppSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Inject
-	private KeycloakLogoutHandler keycloakLogoutHandler;
+  @Inject
+  private KeycloakLogoutHandler keycloakLogoutHandler;
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+  private static final Logger LOG = LoggerFactory.getLogger(
+    WebAppSecurityConfig.class
+  );
 
-    	http
-    	.csrf().ignoringAntMatchers("/api/**", "/engine-rest/**")
-    	.and()
-    	.requestMatchers().antMatchers("/**").and()
-        .authorizeRequests(
-       		authorizeRequests ->
-       		authorizeRequests
-       		.antMatchers("/app/**", "/api/**", "/lib/**")
-       		.authenticated()
-       		.anyRequest()
-       		.permitAll()
-       		)
-	    .oauth2Login()
-	    .and()
-	      .logout()
-	      .logoutRequestMatcher(new AntPathRequestMatcher("/app/**/logout"))
-	      .logoutSuccessHandler(keycloakLogoutHandler)
-        ;
-    }
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    LOG.info("========================================");
+    LOG.info("Successfully configured Camunda Keycloak SSO");
+    LOG.info("========================================");
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Bean
-    public FilterRegistrationBean containerBasedAuthenticationFilter(){
+    http
+      .csrf()
+      .ignoringAntMatchers("/api/**", "/engine-rest/**")
+      .and()
+      .requestMatchers()
+      .antMatchers("/**")
+      .and()
+      .authorizeRequests(
+        authorizeRequests ->
+          authorizeRequests
+            .antMatchers("/app/**", "/api/**", "/lib/**")
+            .authenticated()
+            .anyRequest()
+            .permitAll()
+      )
+      .oauth2Login()
+      .and()
+      .logout()
+      .logoutRequestMatcher(new AntPathRequestMatcher("/app/**/logout"))
+      .logoutSuccessHandler(keycloakLogoutHandler);
+  }
 
-        FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
-        filterRegistration.setFilter(new ContainerBasedAuthenticationFilter());
-        filterRegistration.setInitParameters(Collections.singletonMap("authentication-provider", "org.camunda.bpm.extension.keycloak.showcase.sso.KeycloakAuthenticationProvider"));
-        filterRegistration.setOrder(101); // make sure the filter is registered after the Spring Security Filter Chain
-        filterRegistration.addUrlPatterns("/app/*");
-        return filterRegistration;
-    }
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @Bean
+  public FilterRegistrationBean containerBasedAuthenticationFilter() {
+    FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
+    filterRegistration.setFilter(new ContainerBasedAuthenticationFilter());
+    filterRegistration.setInitParameters(
+      Collections.singletonMap(
+        "authentication-provider",
+        "org.camunda.bpm.extension.keycloak.showcase.sso.KeycloakAuthenticationProvider"
+      )
+    );
+    filterRegistration.setOrder(101); // make sure the filter is registered after the Spring Security Filter Chain
+    filterRegistration.addUrlPatterns("/app/*");
+    return filterRegistration;
+  }
 
-    // The ForwardedHeaderFilter is required to correctly assemble the redirect URL for OAUth2 login.
-	// Without the filter, Spring generates an HTTP URL even though the container route is accessed through HTTPS.
-    @Bean
-    public FilterRegistrationBean<ForwardedHeaderFilter> forwardedHeaderFilter() {
-        FilterRegistrationBean<ForwardedHeaderFilter> filterRegistrationBean = new FilterRegistrationBean<>();
-        filterRegistrationBean.setFilter(new ForwardedHeaderFilter());
-        filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return filterRegistrationBean;
-    }
+  // The ForwardedHeaderFilter is required to correctly assemble the redirect URL for OAUth2 login.
+  // Without the filter, Spring generates an HTTP URL even though the container route is accessed through HTTPS.
+  @Bean
+  public FilterRegistrationBean<ForwardedHeaderFilter> forwardedHeaderFilter() {
+    FilterRegistrationBean<ForwardedHeaderFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+    filterRegistrationBean.setFilter(new ForwardedHeaderFilter());
+    filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+    return filterRegistrationBean;
+  }
 
-	@Bean
-	@Order(0)
-	public RequestContextListener requestContextListener() {
-	    return new RequestContextListener();
-	}
-
+  @Bean
+  @Order(0)
+  public RequestContextListener requestContextListener() {
+    return new RequestContextListener();
+  }
 }
