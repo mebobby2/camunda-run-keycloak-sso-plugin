@@ -37,7 +37,7 @@ public class KeycloakAuthenticationFilter implements Filter {
     private static final String SSO_HEADER_FIELD = "SsoUserHeader";
     private static final String CAMUNDA_ADMIN_GROUP = "camunda-admin";
 
-    private static final Logger logger = Logger.getLogger(AuthenticationFilter.class.getName());
+    private static final Logger logger = Logger.getLogger(KeycloakAuthenticationFilter.class.getName());
 
     public void init(FilterConfig filterConfig) throws ServletException {
     }
@@ -109,7 +109,8 @@ public class KeycloakAuthenticationFilter implements Filter {
                     }
                     if(isAdmin) authorizedApps.add("admin");
                     if (authorizedApps.contains(appName)) {
-                        UserAuthentication newAuthentication = new UserAuthentication(username, groupIds, engineName, authorizedApps);
+                        // UserAuthentication newAuthentication = new UserAuthentication(username, groupIds, engineName, authorizedApps);
+                        UserAuthentication newAuthentication = new UserAuthentication(username, engineName);
                         authentications.addAuthentication(newAuthentication);
                     }
                 }
