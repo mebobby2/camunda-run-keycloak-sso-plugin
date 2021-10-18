@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -17,7 +19,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-
 import org.camunda.bpm.cockpit.Cockpit;
 import org.camunda.bpm.engine.AuthorizationService;
 import org.camunda.bpm.engine.ProcessEngine;
@@ -30,6 +31,8 @@ import org.camunda.bpm.webapp.impl.security.auth.Authentications;
 import org.camunda.bpm.webapp.impl.security.auth.UserAuthentication;
 import java.util.logging.Logger;
 
+@Component
+@Configuration
 public class KeycloakAuthenticationFilter implements Filter {
 
     private static final String[] APPS = new String[] { "cockpit", "tasklist" };
